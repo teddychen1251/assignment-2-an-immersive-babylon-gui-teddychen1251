@@ -6,8 +6,8 @@ This is an INDIVIDUAL assignment.
 
 ## Name and GT user-id
 
-Name: 
-User ID:
+Name: Teddy Chen
+User ID: tchen427
 
 ## Rubric
 

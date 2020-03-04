@@ -1,37 +1,39 @@
-import { Engine } from "@babylonjs/core/Engines/engine";
-import { Scene } from "@babylonjs/core/scene";
-import { Vector3 } from "@babylonjs/core/Maths/math";
-import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
-import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
-import { PointLight } from "@babylonjs/core/Lights/pointLight";
+// Used babylon website
+
+import { Engine, Scene, CubeTexture, Color3, Color4, Texture, Vector3, ArcRotateCamera, WebXRExperienceHelper, WebXRSessionManager, StandardMaterial, SpotLight, PointLight } from "@babylonjs/core";
 import "@babylonjs/core/materials/standardMaterial";
 
-import * as GUI from "@babylonjs/gui";
-
 // Required side effects to populate the Create methods on the mesh class. Without this, the bundle would be smaller but the createXXX methods from mesh would not be accessible.
-import {MeshBuilder} from  "@babylonjs/core/Meshes/meshBuilder";
+import {MeshBuilder} from  "@babylonjs/core";
+
+import { AdvancedDynamicTexture } from "@babylonjs/gui";
+
+import { Dropdown } from "./dropdown";
+import { StatusBar } from "./statusbar";
+import { ToolPalette } from "./toolpalette";
 
 var canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element 
 var engine = new Engine(canvas, true); // Generate the BABYLON 3D engine
 
 
 /******* Add the Playground Class with a static CreateScene function ******/
-class Playground { 
+class Draw3D { 
     public static CreateScene(engine: Engine, canvas: HTMLCanvasElement): Scene {
         // Create the scene space
         var scene = new Scene(engine);
+        scene.createDefaultCameraOrLight(true, true, true);
+        let envHelper = scene.createDefaultEnvironment({
+            skyboxTexture: new CubeTexture("textures/paper", scene),
+            skyboxColor: Color3.White(),
+            groundTexture: new Texture("textures/wood.jpg", scene),
+        });
+        let displayLight = new SpotLight("displayLight", new Vector3(0, 2, 0), new Vector3(0, -1, 0), Math.PI / 3, 2, scene);
 
-        // Add a camera to the scene and attach it to the canvas
-        var camera = new ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, 
-                                         new Vector3(0,0,5), scene);
-        camera.attachControl(canvas, true);
+        // 3D interface
+        const vrHelper = scene.createDefaultVRExperience();
+        vrHelper.currentVRCamera!.position.y += 1.7;
+        vrHelper.enableTeleportation({ floorMeshName: envHelper?.ground?.name });
 
-        // Add lights to the scene
-        var light1 = new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
-        var light2 = new PointLight("light2", new Vector3(0, 1, -1), scene);
-
-        // Add and manipulate meshes in the scene
-        var sphere = MeshBuilder.CreateSphere("sphere", {diameter:2}, scene);
 
         return scene;
     }
@@ -40,7 +42,7 @@ class Playground {
 /******* End of the create scene function ******/    
 // code to use the Class above
 var createScene = function() { 
-    return Playground.CreateScene(engine, 
+    return Draw3D.CreateScene(engine, 
         engine.getRenderingCanvas() as HTMLCanvasElement); 
 }
 
