@@ -1,4 +1,4 @@
-import { Button, Container, Control, StackPanel } from "@babylonjs/gui/2D";
+import { Button, Container, Control, StackPanel } from "@babylonjs/gui";
 import { StatusBar } from "./statusbar";
 
 interface Option {

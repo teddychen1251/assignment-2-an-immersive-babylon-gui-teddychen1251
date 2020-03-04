@@ -43,7 +43,7 @@ export class StatusBar {
 
         this.header.onPointerUpObservable.add(() => {
             this.container.zIndex = 777;
-            this.scrollRegion.height = this.minimized ? `${window.innerHeight - 20}px` : "25px";
+            this.scrollRegion.height = this.minimized ? `${512 - 20}px` : "25px";
             this.minimized = !this.minimized;
             this.scrollRegion.verticalBar.value = 1;
         });
