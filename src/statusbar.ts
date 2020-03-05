@@ -2,23 +2,15 @@ import { Container, Rectangle, TextBlock, Control, ScrollViewer, TextWrapping, S
 
 export class StatusBar {
 
-    static instance: StatusBar;
-    static createInstance(headerColor: string, textAreaColor: string) {
-        StatusBar.instance = new StatusBar(headerColor, textAreaColor);
-    }
-    static getInstance(): StatusBar {
-        return StatusBar.instance;
-    }
-
     container: Container;
     header: Rectangle;
     scrollRegion: ScrollViewer;
     logs: StackPanel;
     minimized: boolean = true;
 
-    private constructor(headerColor: string, textAreaColor: string) {
+    public constructor(headerColor: string, textAreaColor: string, verticalAlignment?: number) {
         this.container = new StackPanel();
-        this.container.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
+        this.container.verticalAlignment = verticalAlignment || Control.VERTICAL_ALIGNMENT_BOTTOM;
         this.container.isHitTestVisible = false;
 
         this.header = new Rectangle();

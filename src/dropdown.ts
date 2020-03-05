@@ -18,18 +18,20 @@ export class Dropdown {
     primaryButton: Button;
     private _top: string = "0px";
     private _left: string = "0px";
+    statusBar: StatusBar;
 
-    static CreateDropdown(name: string, width: string, height: string, options?: Option[]): Dropdown {
-        return new this(name, width, height, options ? options : []);
+    static CreateDropdown(name: string, width: string, height: string, statusBar: StatusBar, options?: Option[]): Dropdown {
+        return new this(name, width, height, options ? options : [], statusBar);
     }
 
-    private constructor(name: string, width: string, height: string, options: Option[]) {
+    private constructor(name: string, width: string, height: string, options: Option[], statusBar: StatusBar) {
         this.width = width;
         this.height = height;
         this.name = name;
         this.options = options ? options : []
         this.color = "black";
         this.background = "white";
+        this.statusBar = statusBar;
 
         this.container = new Container();
         this.container.width = this.width;
@@ -90,7 +92,7 @@ export class Dropdown {
         option.color = this.color;
         option.onPointerUpObservable.add(() => {
             this.optionsPanel.isVisible = false;
-            StatusBar.getInstance().logMessage(`${name.charAt(0).toUpperCase() + name.substring(1)} clicked`);
+            this.statusBar.logMessage(`${name.charAt(0).toUpperCase() + name.substring(1)} clicked`);
         });
         option.onPointerClickObservable.add(action);
         this.optionsPanel.addControl(option);

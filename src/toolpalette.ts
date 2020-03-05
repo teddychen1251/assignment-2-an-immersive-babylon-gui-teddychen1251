@@ -1,5 +1,5 @@
 import { Container, Rectangle, TextBlock, Control, ScrollViewer, TextWrapping, StackPanel, Button, Grid, ColorPicker } from "@babylonjs/gui/2D";
-import { Animation, Node } from "@babylonjs/core";
+import { Animation, Node, Color3 } from "@babylonjs/core";
 import { StatusBar } from "./statusbar";
 
 export class ToolPalette {
@@ -10,12 +10,18 @@ export class ToolPalette {
     toolPalette: StackPanel;
     brushPalette: Grid;
     colorPicker: ColorPicker;
+    color: Color3 = Color3.White();
+    statusBar: StatusBar;
+    currentTexture: string = "";
+    currentTool: string = "";
 
-    constructor(width: string, height: string, background: string) {
+    constructor(width: string, height: string, background: string, statusBar: StatusBar, secondaryHorAlign?: number, secondaryVertAlign?: number) {
         this.width = width;
+        let widthAsNum = parseInt(this.width);
         this.height = height;
         this.background = background;
         let heightAsNum = parseInt(this.height);
+        this.statusBar = statusBar;
 
         this.container = new Container();
         this.container.isHitTestVisible = false;  
@@ -36,37 +42,38 @@ export class ToolPalette {
         line.onPointerUpObservable.add(() => {
             this.clearButtons(pen, eraser);
             line.background = "darkgrey";
-            StatusBar.getInstance().logMessage("Line tool clicked");
+            this.statusBar.logMessage("Line tool clicked");
+            this.currentTool = "line";
         });
         let pen = Button.CreateImageOnlyButton("Pen", "textures/pen.png");
         pen.height = `${heightAsNum / 5}px`;
         pen.onPointerUpObservable.add(() => {
             this.clearButtons(line, eraser);
             pen.background = "darkgrey";
-            StatusBar.getInstance().logMessage("Pen tool clicked");
+            this.statusBar.logMessage("Pen tool clicked");
+            this.currentTool = "pen";
         });
         let eraser = Button.CreateImageOnlyButton("Eraser", "textures/eraser.png");
         eraser.height = `${heightAsNum / 5}px`;
         eraser.onPointerUpObservable.add(() => {
             this.clearButtons(line, pen);
             eraser.background = "darkgrey";
-            StatusBar.getInstance().logMessage("Eraser tool clicked");
+            this.statusBar.logMessage("Eraser tool clicked");
+            this.currentTool = "eraser";
         });
         let brush = Button.CreateImageOnlyButton("Brush", "textures/brush.png");
         brush.height = `${heightAsNum / 5}px`;
         brush.onPointerUpObservable.add(() => {
-            this.clearButtons(pen, line, eraser);
             this.colorPicker.isVisible = false;
             this.brushPalette.isVisible = !this.brushPalette.isVisible;
-            StatusBar.getInstance().logMessage("Brush palette clicked");
+            this.statusBar.logMessage("Brush palette clicked");
         });
         let colorWheel = Button.CreateImageOnlyButton("Color Wheel", "textures/colorWheel.png");
         colorWheel.height = `${heightAsNum / 5}px`;
         colorWheel.onPointerUpObservable.add(() => {
-            this.clearButtons(pen, line, eraser);
             this.brushPalette.isVisible = false;
             this.colorPicker.isVisible = !this.colorPicker.isVisible;
-            StatusBar.getInstance().logMessage("Color wheel clicked");
+            this.statusBar.logMessage("Color wheel clicked");
         });
         this.toolPalette.addControl(line);
         this.toolPalette.addControl(pen);
@@ -84,16 +91,16 @@ export class ToolPalette {
         });
 
         this.brushPalette = new Grid();
-        this.brushPalette.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-        this.brushPalette.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.brushPalette.verticalAlignment = secondaryVertAlign || Control.VERTICAL_ALIGNMENT_CENTER;
+        this.brushPalette.horizontalAlignment = secondaryHorAlign || Control.HORIZONTAL_ALIGNMENT_LEFT;
         this.brushPalette.isHitTestVisible = false;
-        this.brushPalette.addColumnDefinition(30, true);
-        this.brushPalette.addColumnDefinition(30, true);
-        this.brushPalette.addRowDefinition(50, true);
-        this.brushPalette.addRowDefinition(50, true);
-        this.brushPalette.addRowDefinition(50, true);
-        this.brushPalette.addRowDefinition(50, true);
-        this.brushPalette.top = "50%";
+        this.brushPalette.addColumnDefinition(widthAsNum / 2, true);
+        this.brushPalette.addColumnDefinition(widthAsNum / 2, true);
+        this.brushPalette.addRowDefinition(heightAsNum / 4, true);
+        this.brushPalette.addRowDefinition(heightAsNum / 4, true);
+        this.brushPalette.addRowDefinition(heightAsNum / 4, true);
+        this.brushPalette.addRowDefinition(heightAsNum / 4, true);
+        this.brushPalette.top = secondaryVertAlign ? "0" : "50%";
         // this.brushPalette.left = "-60px";
         this.brushPalette.isVisible = false;
         let brushTextures = [
@@ -111,18 +118,26 @@ export class ToolPalette {
                 let textureButton = 
                     Button.CreateImageOnlyButton(brushTextures[i * 2 + j], `textures/${brushTextures[i * 2 + j]}`);
                 this.brushPalette.addControl(textureButton, i, j);
+                textureButton.onPointerUpObservable.add(() => {
+                    if (this.currentTexture === `textures/${brushTextures[i * 2 + j]}`) {
+                        this.currentTexture = "";
+                    } else {
+                        this.currentTexture = `textures/${brushTextures[i * 2 + j]}`;
+                    }
+                });
             }
         }
         this.container.addControl(this.brushPalette);
         
         this.colorPicker = new ColorPicker();
         this.colorPicker.size = this.height;
-        this.colorPicker.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-        this.colorPicker.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        this.colorPicker.top = `${heightAsNum / 2}px`;
+        this.colorPicker.verticalAlignment = secondaryVertAlign || Control.VERTICAL_ALIGNMENT_CENTER;
+        this.colorPicker.horizontalAlignment = secondaryHorAlign || Control.HORIZONTAL_ALIGNMENT_LEFT;
+        this.colorPicker.top = secondaryVertAlign ? 0 : `${heightAsNum / 2}px`;
         // this.colorPicker.left = `-${this.colorPicker.widthInPixels}px`;
         this.colorPicker.isVisible = false;
         this.container.addControl(this.colorPicker);
+        this.colorPicker.onValueChangedObservable.add(value => this.color = value);
     }
 
     clearButtons(...buttons: Button[]) {
