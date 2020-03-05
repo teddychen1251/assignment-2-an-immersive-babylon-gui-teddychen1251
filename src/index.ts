@@ -6,7 +6,7 @@ import "@babylonjs/core/materials/standardMaterial";
 // Required side effects to populate the Create methods on the mesh class. Without this, the bundle would be smaller but the createXXX methods from mesh would not be accessible.
 import {MeshBuilder} from  "@babylonjs/core";
 
-import { AdvancedDynamicTexture, GUI3DManager, PlanePanel, StackPanel, StackPanel3D, Control } from "@babylonjs/gui";
+import { AdvancedDynamicTexture, GUI3DManager, PlanePanel, StackPanel, StackPanel3D, Control, Button } from "@babylonjs/gui";
 
 import { Dropdown } from "./dropdown";
 import { StatusBar } from "./statusbar";
@@ -30,13 +30,41 @@ class Draw3D {
             groundTexture: new Texture("textures/wood.jpg", scene),
         });
         
+        // Initial 2D screen
+        let fullscreenUI = AdvancedDynamicTexture.CreateFullscreenUI("2D");
+        let switchButton = Button.CreateSimpleButton("switch", "GUI #1");
+        switchButton.width = "120px"
+        switchButton.height = "40px";
+        switchButton.background = "lightgreen";
+        switchButton.onPointerUpObservable.add(() => {
+            if (switchButton.textBlock?.text === "GUI #1") {
+                switchButton.textBlock.text = "GUI #2";
+                planeGUIOn = false;
+                panel.isVisible = false;
+                panels[index].isVisible = true;
+                threeCanvas.toolPalette = toolPaletteC;
+            } else {
+                switchButton.textBlock!.text = "GUI #1";
+                planeGUIOn = true;
+                panels[index].isVisible = false;
+                threeCanvas.toolPalette = toolPalette;
+            }
+        });
+        fullscreenUI.addControl(switchButton);
+        
+
         let planeGUIOn = true;
 
         // 3D interfaces
         const vrHelper = scene.createDefaultVRExperience();
         vrHelper.currentVRCamera!.position.y += 1.7;
         vrHelper.enableTeleportation({ floorMeshName: envHelper?.ground?.name });
-
+        vrHelper.onEnteringVRObservable.add(() => {
+            switchButton.isVisible = false;
+        });
+        vrHelper.onExitingVRObservable.add(() => {
+            switchButton.isVisible = true;
+        });
         // plane GUI
         let panel = MeshBuilder.CreatePlane("UI", { width: 8, height: 4 }, scene);
         panel.isVisible = false;
@@ -155,7 +183,7 @@ class Draw3D {
          toolPanelTexture.addControl(toolPaletteC.container);
 
         // Canvas
-        const threeCanvas = new Canvas(scene, vrHelper, toolPalette);//delete statusBar
+        const threeCanvas = new Canvas(scene, vrHelper, toolPalette);
 
         return scene;
     }
